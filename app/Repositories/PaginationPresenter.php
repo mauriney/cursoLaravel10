@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Repositories;
+
+use illuminate\Pagination\LengthAwarePaginator;
+use stdClass;
+
+class PaginationPresenter implements PaginationIntarface
+{
+    /**
+     * @var stdClass[]
+     */
+    private array $items;
+
+    public function __construct(
+        protected LengthAwarePaginator $paginator, 
+    ) 
+    {
+        $this->items = $this->resolveItems($this->paginator->items());
+    }
+
+    /**
+     * @return stdClass[]
+     */
+    public function items(): array
+    {
+        return $this->items;
+        // return $this->paginator->items();
+    }
+
+    public function total(): int
+    {
+        return $this->paginator->total() ?? 0;
+    }
+
+    public function isFirstPage(): bool
+    {
+        return $this->paginator->onFirstPage();
+    }
+
+    public function isLastPage(): bool
+    {
+        // return $this->paginator->onLastPage();
+        return $this->paginator->currentPage() === $this->paginator->lastPage();
+    }
+
+    public function currentPage(): int
+    {
+        return $this->paginator->currentPage() === $this->paginator->lastPage();
+    }
+
+    public function getNumberNextPage(): int
+    {
+        // return $this->paginator->getNumberNextPage() ?? 1;
+        return $this->paginator->currentPage() + 1;
+    }
+
+    public function getNumberPreviousPage(): int
+    {
+        // return $this->paginator->getNumberPreviusPage() ?? 1;
+        return $this->paginator->currentPage() - 1;
+    }
+
+    private function resolveItems(array $items):array
+    {
+        $response = [];
+        foreach ($items as $item) {
+            $stdClassObject = new stdClass;
+            foreach ($item->toArray() as $key => $value) {
+                $stdClassObject->{$key} = $value;
+            }
+            array_push($response, $stdClassObject);
+        }
+
+        return $response;
+    }
+}
